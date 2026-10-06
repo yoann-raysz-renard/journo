@@ -23,14 +23,14 @@ Java/Spring Boot · PostgreSQL · Angular SPA + JSON API · separate PDF service
 Chrome · Maven multi-module · hand-written Dockerfiles · Spring Session + Redis · Liquibase ·
 ngx-translate · kind with plain manifests first · English code, French UI only.
 
-Also settled: Java 25 LTS · Spring Boot 4.1 · Temurin JRE on Debian · Postgres as a
-hand-written StatefulSet first · ingress-nginx · code-first OpenAPI with a generated Angular
+Also settled: Java 25 LTS · Spring Boot 4.1 · Temurin JRE on Ubuntu · Postgres as a
+hand-written StatefulSet first · Gateway API with Envoy Gateway · code-first OpenAPI with a generated Angular
 client · unit tests plus Testcontainers · GitHub Actions pushing images to GHCR · Redis
 ephemeral · `dev.journo` packages, organised by feature.
 
 - [x] Agree the [glossary](glossary.md) terms you will need before writing the first changeset.
 - [ ] Skim the short **Still open** list at the end of `decisions.md` — Angular version, local
-      Ingress hostname, GitOps secret handling, observability. None block starting.
+      Gateway hostname, GitOps secret handling, observability. None block starting.
 
 ## 1. Foundations
 
@@ -42,8 +42,8 @@ ephemeral · `dev.journo` packages, organised by feature.
       `ConfigMap`.
 - [ ] Liquibase changelog, runnable as a **standalone command** — that becomes the init
       container or migration `Job`. The app must never migrate at startup with N replicas.
-- [ ] Dockerfiles per service: multi-stage, non-root user, `eclipse-temurin:25-jre` on
-      Debian, explicit `-XX:MaxRAMPercentage`.
+- [ ] Dockerfiles per service: multi-stage, non-root user, `eclipse-temurin:25-jre-noble`
+      (Ubuntu), explicit `-XX:MaxRAMPercentage`.
 - [ ] springdoc emitting the OpenAPI document, and `ng-openapi-gen` wired into the web build.
 - [ ] Testcontainers for Postgres and Redis, driving both the test suite and the local dev loop.
 - [ ] GitHub Actions: Maven verify, Angular build and lint, then images pushed to GHCR by SHA.
@@ -139,10 +139,10 @@ Suggested order — each builds on the last.
 
 Run this alongside the features; do not wait for parity.
 
-- [ ] Local **kind** cluster, scripted to recreate from nothing, with ingress-nginx installed.
+- [ ] Local **kind** cluster, scripted to recreate from nothing, with Envoy Gateway installed.
 - [ ] Image build and load into the cluster; pin by digest where possible.
-- [ ] **Approach 1** — plain manifests: Deployments for api/pdf/web, Services, one Ingress
-      splitting `/api/*` from `/*`, ConfigMap, Secret, probes (including a `startupProbe` —
+- [ ] **Approach 1** — plain manifests: Deployments for api/pdf/web, Services, a Gateway and
+      HTTPRoutes splitting `/api/*` from `/*`, ConfigMap, Secret, probes (including a `startupProbe` —
       Spring Boot will need it), resource requests/limits, and the Liquibase migration `Job`.
 - [ ] Postgres as a hand-written StatefulSet with `volumeClaimTemplates`; Redis as a plain
       Deployment on `emptyDir`. Two stateful components, two deliberately different shapes.

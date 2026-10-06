@@ -21,9 +21,9 @@ ship, that is stated — this repo optimises for the deployment lesson, not for 
 | 11 | UI translation | ngx-translate runtime catalogues |
 | 12 | Local cluster | kind, plain manifests first |
 | 13 | Java / Spring Boot versions | Java 25 LTS, Spring Boot 4.1 |
-| 14 | Base image | Temurin JRE on Debian |
+| 14 | Base image | Temurin JRE on Ubuntu |
 | 15 | Postgres, first pass | Hand-written StatefulSet |
-| 16 | Ingress controller | ingress-nginx |
+| 16 | Traffic entry | Gateway API, Envoy Gateway |
 | 17 | API contract | Code-first, generated Angular client |
 | 18 | Testing | Unit plus Testcontainers |
 | 19 | CI | Build, test, push images to GHCR |
@@ -69,7 +69,7 @@ replica, and removes most of the stateful lessons.
 Angular CDK ships `DragDrop`, and the timetable — the one screen with genuinely hard
 interaction — is the deciding factor. Typed forms suit the grade book too.
 
-Accepted consequence: **three deployables plus Postgres and Redis**, an Ingress path split
+Accepted consequence: **three deployables plus Postgres and Redis**, a routing split
 between `/api/*` and `/*`, and a real API contract to keep honest. More moving parts, which
 here is the point.
 
@@ -146,7 +146,7 @@ abstractions where practical, so the reviewable artefact stays real Postgres DDL
 ## 11. ngx-translate
 
 JSON catalogues keyed by English identifiers, loaded at runtime. One build artefact whatever
-the locale, so neither the image nor the Ingress needs to know about languages. Only `fr` will
+the locale, so neither the image nor the Gateway needs to know about languages. Only `fr` will
 exist, but no user-facing string is ever a literal in a template.
 
 `@angular/localize` is the official route and faster at runtime, but it wants a build and a
@@ -157,8 +157,8 @@ bundle per locale — a build matrix for a single language.
 kind is the reference implementation, scripted to recreate from nothing, and loads local
 images directly.
 
-The first deployment approach is **hand-written manifests**: Deployment, Service, Ingress,
-ConfigMap, Secret, probes, resource requests and limits, and the migration Job. Every field
+The first deployment approach is **hand-written manifests**: Deployment, Service, Gateway,
+HTTPRoute, ConfigMap, Secret, probes, resource requests and limits, and the migration Job. Every field
 written by hand once, before Kustomize, Helm or a GitOps controller generates any of them.
 Sequence in [roadmap-free-plan.md](roadmap-free-plan.md) §6.
 
@@ -172,9 +172,10 @@ Java 26 was rejected as non-LTS — end of life within months and thinner base-i
 availability. Java 21 plus Boot 3.5 would match most production estates today, at the cost of
 a known upgrade already waiting.
 
-## 14. Temurin JRE on Debian
+## 14. Temurin JRE on Ubuntu
 
-`eclipse-temurin:25-jre-<debian>` for both services.
+`eclipse-temurin:25-jre-noble` (Ubuntu 24.04) for both services. Temurin publishes no Debian
+variant; Ubuntu is the default family.
 
 The decisive constraint is not the API but the PDF service: **Chrome and Playwright do not
 officially support Alpine/musl**, so that service needs glibc regardless. Using one base
@@ -194,14 +195,19 @@ binds to — so that CloudNativePG later reads as a comparison rather than as ma
 No failover and no backups in this pass. That is acceptable for a dev cluster and is exactly
 the gap the operator experiment should close.
 
-## 16. ingress-nginx
+## 16. Gateway API, implemented by Envoy Gateway
 
-kind documents it directly and it is the most widely deployed controller, so external examples
-match what is actually running. Handles the `/api/*` versus `/*` split, and supports cookie
-affinity — needed for the deliberate demonstration in decision 9 of why sticky sessions hurt.
+A `Gateway` plus `HTTPRoute`s instead of an `Ingress`. ingress-nginx was the original choice,
+but it was retired in March 2026 — no releases or security fixes since — and Kubernetes points
+to Gateway API as the replacement.
 
-Gateway API is where the ecosystem is heading and is worth a later experiment; Ingress is
-still what most material and most clusters use today.
+Envoy Gateway as the implementation: a CNCF project built directly on Envoy, tracking the
+Gateway API spec closely. It handles the `/api/*` versus `/*` split, and supports cookie-based
+`sessionPersistence` on an `HTTPRoute` — needed for the deliberate demonstration in decision 9
+of why sticky sessions hurt.
+
+The API serves its own `/api` prefix rather than relying on a path rewrite, so routes stay
+portable if the implementation changes.
 
 ## 17. Code-first, generated Angular client
 
@@ -278,7 +284,7 @@ class `DailyLog`. No underscores in package names.
 Lower stakes, and none of them block writing code:
 
 - Angular version and component library, if any beyond the CDK.
-- How the Ingress is reached locally — `nip.io`, a hosts entry, or port-forwarding — and
+- How the Gateway is reached locally — `nip.io`, a hosts entry, or port-forwarding — and
   whether TLS is worth doing with a local CA.
 - Secret handling once GitOps arrives: plain `Secret` objects will not do when manifests live
   in a public repository. Sealed Secrets, SOPS, or External Secrets.
