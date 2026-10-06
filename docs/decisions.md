@@ -58,7 +58,7 @@ a like-for-like comparison on the same cluster, not a starting position.
 
 The stateful-workload question is one of the experiments, so the datastore needs to be worth
 deploying three ways: hand-rolled StatefulSet, the CloudNativePG operator, and an external
-managed instance. Also the better fit for the term and holiday-zone date logic.
+managed instance. Also the better fit for the school-period and holiday-zone date logic.
 
 SQLite was rejected: it pins the app to one writer on one volume, caps the web tier at one
 replica, and removes most of the stateful lessons.
@@ -216,7 +216,7 @@ edit it.
 
 ## 18. Unit tests plus Testcontainers
 
-Domain logic — term boundaries from holiday zones, grading scales, timetable hour totals —
+Domain logic — school-period boundaries from holiday zones, grading scales, timetable hour totals —
 tested in isolation. Everything touching persistence tested against **real Postgres and real
 Redis** in containers. No H2 pretending to be Postgres.
 

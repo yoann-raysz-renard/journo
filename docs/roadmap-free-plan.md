@@ -28,7 +28,7 @@ hand-written StatefulSet first · ingress-nginx · code-first OpenAPI with a gen
 client · unit tests plus Testcontainers · GitHub Actions pushing images to GHCR · Redis
 ephemeral.
 
-- [ ] Agree the [glossary](glossary.md) terms you will need before writing the first changeset.
+- [x] Agree the [glossary](glossary.md) terms you will need before writing the first changeset.
 - [ ] Skim the short **Still open** list at the end of `decisions.md` — package naming, local
       Ingress hostname, GitOps secret handling, observability. None block starting.
 
@@ -59,10 +59,10 @@ container, or a mounted `ConfigMap`.
 
 - [ ] **School calendar.** Load holiday dates and zones (A/B/C) from the Ministry open-data
       [calendrier scolaire dataset](https://data.education.gouv.fr/explore/dataset/fr-en-calendrier-scolaire/).
-      Needed to derive the periods (*trimestres*/*semestres*) every other module reports on.
-- [ ] **Curriculum.** Cycles, subjects, domains and objectives from the official *programmes*.
+      Needed to derive the school periods (*trimestres*/*semestres*) every other module reports on.
+- [ ] **Curriculum.** Cycles, subjects, strands and objectives from the official *programmes*.
       Decide how deep to go — full objective trees are a large data-entry job; a subject +
-      domain skeleton is enough to be credible.
+      strand skeleton is enough to be credible.
 - [ ] Reference **data** keeps its official French labels — a subject really is named
       « Questionner le monde ». That is content in a row, not an identifier: English column
       names, French values, and no attempt to translate the programmes.
@@ -71,12 +71,12 @@ container, or a mounted `ConfigMap`.
 
 Build this as one vertical slice before adding breadth.
 
-- [ ] Core entities: teacher → school → class(es) → pupils; subject/domain; timetable slot;
-      session (*séance*); assessment; period.
+- [ ] Core entities: teacher → school → class(es) → pupils; subject/strand; timetable slot;
+      lesson (*séance*); assessment; school period.
 - [ ] **Multi-level classes** from the start. Retrofitting a class that spans CP *and* CE1
       into a single-level model is painful, and it is the normal case in rural schools.
-- [ ] The **timetable is the spine**: sessions derive from slots, and everything else hangs
-      off sessions. Model that relationship first.
+- [ ] The **timetable is the spine**: lessons derive from slots, and everything else hangs
+      off lessons. Model that relationship first.
 
 ## 4. The six features
 
@@ -90,9 +90,9 @@ Suggested order — each builds on the last.
 - [ ] Multi-level and multi-class views.
 
 ### Cahier journal — `daily_log`
-- [ ] Auto-generate the day's sessions from the timetable.
-- [ ] Per-session pedagogical content: objectives, activities, materials, notes.
-- [ ] Copy a session to another day or week.
+- [ ] Auto-generate the day's lessons from the timetable.
+- [ ] Per-lesson pedagogical content: objectives, activities, materials, notes.
+- [ ] Copy a lesson to another day or week.
 - [ ] Day and week views; jump to any date.
 - [ ] Read-only share link for a substitute — the one sharing feature the free plan needs.
 
@@ -102,9 +102,9 @@ Suggested order — each builds on the last.
 - [ ] Custom lists and groups (for workshop rotations later).
 
 ### Carnet de notes — `grade_book`
-- [ ] Record assessments against a session or a subject/domain.
+- [ ] Record assessments against a lesson or a subject/strand.
 - [ ] Selectable scales: percentage, out of 10, A/PA/NA, plus a custom scale.
-- [ ] Automatic aggregation by subject and by domain.
+- [ ] Automatic aggregation by subject and by strand.
 - [ ] Per-pupil view positioning them against the class average.
 
 ### Carnets de réussites — `achievement_record`
@@ -113,7 +113,7 @@ Suggested order — each builds on the last.
 - [ ] Per-pupil booklet view.
 
 ### Livret & export LSU — `periodic_report`
-- [ ] Periodic assessment (*bilan périodique*) per pupil per period, assembled from the grade
+- [ ] Periodic assessment (*bilan périodique*) per pupil per school period, assembled from the grade
       book with no re-entry.
 - [ ] Generate the LSU import XML, class by class — filename pattern `import-lsun-aaaa-mm-jj.xml`,
       carrying directors, classes, pupils, periods, domains, teachers, pathways and the

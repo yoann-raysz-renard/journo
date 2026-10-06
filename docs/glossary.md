@@ -27,20 +27,21 @@ cheap; renaming a concept that has leaked into forty files is not.
 | directeur, directrice | `head_teacher` | Not `director`. |
 | niveau (CP, CE1, …) | `level` | A `class_group` can span several — multi-level is the normal case. |
 | cycle | `cycle` | Cycles 1–3 group levels. |
-| groupe, atelier | `group`, `workshop` | Subsets of a class for rotations. |
+| groupe | `pupil_group` | A subset of a class's pupils. Not `group`, which SQL reserves. |
+| atelier | `workshop` | The activity a `pupil_group` rotates through. |
 
 ## Time
 
 | Domain (FR) | Code / schema (EN) | Notes |
 | --- | --- | --- |
 | année scolaire | `school_year` | Straddles two calendar years — store both bounds. |
-| période, trimestre, semestre | `term` | The unit reports are scoped to. |
+| période, trimestre, semestre | `school_period` | The unit reports are scoped to. Not `period`, which clashes with `java.time.Period`. |
 | semaine | `week` | |
 | emploi du temps | `timetable` | The spine of the model. |
 | créneau | `time_slot` | A recurring weekly slot in the timetable. |
-| séance | `session` | A concrete occurrence of a slot on a date. |
+| séance | `lesson` | A concrete occurrence of a slot on a date. |
 | vacances | `holiday` | From the Ministry open-data calendar. |
-| zone (A, B, C) | `zone` | Determines term boundaries. |
+| zone (A, B, C) | `zone` | Determines `school_period` boundaries. |
 | jour férié | `public_holiday` | Distinct from school holidays. |
 
 ## Teaching content
@@ -49,10 +50,21 @@ cheap; renaming a concept that has leaked into forty files is not.
 | --- | --- | --- |
 | cahier journal | `daily_log` | |
 | matière, discipline | `subject` | |
-| domaine | `domain` | Subdivision of a subject in the official programmes. |
+| domaine (d'un programme) | `strand` | Subdivision of a subject — Français → Lecture, Écriture… Not `domain`, which clashes with "domain model". |
 | objectif | `objective` | |
 | programme (officiel) | `curriculum` | The national reference data. |
 | compétence | `competency` | |
+
+### *Domaine* is overloaded
+
+The French word covers four different things; map by meaning, not by word:
+
+| Where it appears | Meaning | Maps to |
+| --- | --- | --- |
+| Programmes, cycles 2–3 | Subdivision of a subject | `strand` |
+| Maternelle, « 5 domaines d'apprentissage » | Plays the role of a subject | `subject` |
+| LSU, *domaine d'enseignement* / *sous-domaine* | Roughly `subject` / `strand` | Export mapping layer only |
+| Socle commun, « 5 domaines » | A separate framework | `common_core_domain`, if ever needed |
 
 ## Assessment
 
@@ -62,7 +74,7 @@ cheap; renaming a concept that has leaked into forty files is not.
 | évaluation | `assessment` | The act of assessing. |
 | note, résultat | `grade` | The recorded value. |
 | échelle de notation | `grading_scale` | %, /10, A/PA/NA, or custom. |
-| acquis / partiellement acquis / non acquis | `acquired` / `partially_acquired` / `not_acquired` | Keep the three-state scale explicit, not a boolean. |
+| acquis / en cours d'acquisition / non acquis | `acquired` / `in_progress` / `not_acquired` | Competency state in an `achievement_record`. Keep the three states explicit, not a boolean. |
 | moyenne | `average` | |
 | carnet de réussites | `achievement_record` | Maternelle-facing counterpart to grades. |
 | bilan périodique | `periodic_report` | What LSU consumes. |
