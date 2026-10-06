@@ -26,10 +26,10 @@ ngx-translate · kind with plain manifests first · English code, French UI only
 Also settled: Java 25 LTS · Spring Boot 4.1 · Temurin JRE on Debian · Postgres as a
 hand-written StatefulSet first · ingress-nginx · code-first OpenAPI with a generated Angular
 client · unit tests plus Testcontainers · GitHub Actions pushing images to GHCR · Redis
-ephemeral.
+ephemeral · `dev.journo` packages, organised by feature.
 
 - [x] Agree the [glossary](glossary.md) terms you will need before writing the first changeset.
-- [ ] Skim the short **Still open** list at the end of `decisions.md` — package naming, local
+- [ ] Skim the short **Still open** list at the end of `decisions.md` — Angular version, local
       Ingress hostname, GitOps secret handling, observability. None block starting.
 
 ## 1. Foundations

@@ -28,6 +28,7 @@ ship, that is stated — this repo optimises for the deployment lesson, not for 
 | 18 | Testing | Unit plus Testcontainers |
 | 19 | CI | Build, test, push images to GHCR |
 | 20 | Redis durability | Ephemeral, no persistence |
+| 21 | Packages and Maven coordinates | `dev.journo`, package by feature |
 
 ## 1. English in code, French in the UI
 
@@ -249,11 +250,33 @@ This is deliberate contrast, not laziness — two stateful components deployed t
 ways, side by side, so the difference between durable state and cache-like state is visible in
 the manifests themselves.
 
+## 21. `dev.journo`, package by feature
+
+| | |
+| --- | --- |
+| groupId | `dev.journo` |
+| artifactIds | `journo-parent`, `journo-api`, `journo-pdf`, `journo-shared` |
+| version | `0.0.1-SNAPSHOT` — images are identified by commit SHA (decision 19), not by Maven version |
+| Root packages | `dev.journo.api`, `dev.journo.pdf`, `dev.journo.shared` — one per module, so no package is split across modules |
+
+The `journo.dev` domain is not ours. That is acceptable because nothing is published to a
+Maven repository — the artefacts are container images on GHCR. The verifiable alternative,
+`io.github.yoann_raysz_renard.journo`, was rejected as noise in every import. Revisit only if
+a module is ever published as a library.
+
+Inside each module, **package by feature, not by layer**: `dev.journo.api.timetable`,
+`.dailylog`, `.pupil`, `.gradebook`, `.achievement`, `.report`, `.calendar`, `.curriculum`.
+Features map onto the roadmap sections, and the LSU export's French names stay confined to
+`report`, which is the boundary decision 1 asks for. Layer packages (`controller`, `service`,
+`repository`) would scatter every feature across all of them.
+
+Glossary names convert mechanically: `daily_log` in SQL becomes the package `dailylog` and the
+class `DailyLog`. No underscores in package names.
+
 ## Still open
 
 Lower stakes, and none of them block writing code:
 
-- Java package naming and Maven coordinates.
 - Angular version and component library, if any beyond the CDK.
 - How the Ingress is reached locally — `nip.io`, a hosts entry, or port-forwarding — and
   whether TLS is worth doing with a local CA.
